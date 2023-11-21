@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{/layout/header::head('블로그')}"></head>
+
+<body>
+  
+  <div th:replace="~{/layout/header::header}"></div>
+  
+  <div class="main_wrap">
+  
+    <div class="wrap wrap_8">
+    
+      <div class="text-center mb-3">
+        <a th:href="@{/blog/write.form}">
+          <button type="button" class="btn btn-outline-primary">새글작성</button>
+        </a>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <td>순번</td>
+              <td>제목</td>
+              <td>조회수</td>
+              <td>작성자</td>
+              <td>작성일자</td>
+            </tr>
+          </thead>
+          <tbody>
+            <th:block th:each="b,vs:${blogList}">
+              <tr class="align-bottom">
+                <td th:text="${beginNo - vs.index}"></td>
+                <td>
+                  <!-- 로그인 한 경우 -->
+                  <th:block th:if="${session.user != null}">
+                    <!-- 내가 작성한 블로그의 조회수는 증가하지 않는다. -->
+                    <th:block th:if="${session.user.userNo == b.userDto.userNo}">                      
+                      <a th:href="@{/blog/detail.do(blogNo=${b.blogNo})}" th:text="${b.title}"></a>
+                    </th:block>
+                    <!-- 내가 작성하지 않았다면 조회수를 증가시킨 뒤 상세보기 요청을 한다. -->
+                    <th:block th:if="${session.user.userNo != b.userDto.userNo}">
+                      <a th:href="@{/blog/increseHit.do(blogNo=${b.blogNo})}" th:text="${b.title}"></a>
+                    </th:block>
+                  </th:block>
+                  <!-- 로그인 안 한 경우 -->
+                  <th:block th:if="${session.user == null}">
+                    <a th:href="@{/blog/increseHit.do(blogNo=${b.blogNo})}" th:text="${b.title}"></a>
+                  </th:block>
+                </td>
+                <td th:text="${#numbers.formatInteger(b.hit, 1, 'COMMA')}"></td>
+                <td th:text="${b.userDto.email}"></td>
+                <td th:text="${b.createdAt}"></td>
+              </tr>
+            </th:block>
+          </tbody>
+          <tfoot th:if="${not #lists.isEmpty(blogList)}">
+            <tr>
+              <td colspan="5" th:utext="${paging}"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    
+    </div>
+    
+    <script th:inline="javascript">
+    
+      const fnAddResult = () => {
+        let addResult = /*[[${addResult}]]*/ null;
+        if(addResult !== null){
+          if(addResult === 1){
+            alert('블로그가 작성되었습니다.');
+          } else {
+            alert('블로그 작성이 실패했습니다.');
+          }
+        }
+      }
+      
+      const fnRemoveResult = () => {
+        let removeResult = /*[[${removeResult}]]*/ null;
+        if(removeResult !== null){
+          if(removeResult === 1){
+            alert('블로그가 삭제되었습니다.');
+            $('#upload_list').empty();
+          } else {
+            alert('블로그 삭제가 실패했습니다.');
+          }
+        }
+      }
+    
+      fnAddResult();
+      fnRemoveResult();
+      
+    </script>
+
+  </div>
+  
+  <div th:replace="~{/layout/footer::footer}"></div>
+
+</body>
+</html>
