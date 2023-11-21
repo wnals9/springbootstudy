@@ -74,9 +74,11 @@
                     <button type="button" class="btn btn-outline-dark btn-sm btn_reply">댓글</button>
                     <!-- 게시글삭제버튼 -->
                     <form class="frm_remove" method="post" th:action="@{/free/remove.do}" style="display: inline;">
-                      <th:block th:if="${free.email == session.user.email}">                  
-                        <input type="hidden" name="freeNo" th:value="${free.freeNo}">
-                        <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                      <th:block th:if="${session.user != null}">
+                        <th:block th:if="${free.email == session.user.email}">                  
+                          <input type="hidden" name="freeNo" th:value="${free.freeNo}">
+                          <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                        </th:block>
                       </th:block>
                     </form>
                   </td>
@@ -91,22 +93,24 @@
               </tr>
               <tr class="blind write_tr">
                 <td colspan="4">
-                  <form method="post" th:action="@{/free/addReply.do}">
-                    <div class="input-group mb-3">
-                      <label class="input-group-text" id="inputGroup-sizing-default">작성자</label>
-                      <input type="text" name="email" th:value="${session.user.email}" readonly class="form-control">
-                    </div>
-                    <div class="input-group">
-                      <label for="contents" class="input-group-text">내용</label>
-                      <textarea name="contents" id="contents" class="form-control" aria-label="With textarea"></textarea>
-                      <button type="submit" class="btn btn-primary btn-sm">댓글달기</button>
-                    </div>
-                    <div>
-                      <input type="hidden" name="depth" th:value="${free.depth}">
-                      <input type="hidden" name="groupNo" th:value="${free.groupNo}">
-                      <input type="hidden" name="groupOrder" th:value="${free.groupOrder}">
-                    </div>
-                  </form>
+                  <th:block th:if="${session.user != null}">
+                    <form method="post" th:action="@{/free/addReply.do}">
+                      <div class="input-group mb-3">
+                        <label class="input-group-text" id="inputGroup-sizing-default">작성자</label>
+                          <input type="text" name="email" th:value="${session.user.email}" readonly class="form-control">
+                      </div>
+                      <div class="input-group">
+                        <label for="contents" class="input-group-text">내용</label>
+                        <textarea name="contents" id="contents" class="form-control" aria-label="With textarea"></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm">댓글달기</button>
+                      </div>
+                      <div>
+                        <input type="hidden" name="depth" th:value="${free.depth}">
+                        <input type="hidden" name="groupNo" th:value="${free.groupNo}">
+                        <input type="hidden" name="groupOrder" th:value="${free.groupOrder}">
+                      </div>
+                    </form>
+                  </th:block>
                 </td>
               </tr>
             </th:block>

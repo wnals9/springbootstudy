@@ -6,6 +6,12 @@ spring:
       jdbc-url: jdbc:log4jdbc:oracle:thin:@localhost:1521:xe
       username: GD
       password: 1111
+  web:
+    resources:
+      static-locations:
+      - classpath:/static/css/
+      - classpath:/static/js/
+      - classpath:/static/image/
 
 #  main:
 #    web-application-type: none  # Do not use embeded tomcat
@@ -14,7 +20,6 @@ spring:
 mybatis:
   config-location: mybatis/config/mybatis-config.xml
   mapper-locations: mybatis/mapper/*.xml
-#  type-aliases-package: com.gdu.myhome.dto
 
 # character encoding, session, port
 server:
