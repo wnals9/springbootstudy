@@ -8,8 +8,8 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 @Configuration
 public class FileConfig {
 
-  @Bean
-  public MultipartResolver multipartResolver() {
+    @Bean
+    MultipartResolver multipartResolver() {
     CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver();
     commonsMultipartResolver.setDefaultEncoding("UTF-8");
     commonsMultipartResolver.setMaxUploadSize(1024 * 1024 * 100);       // 전체 첨부 파일의 최대 크기 100MB

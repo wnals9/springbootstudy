@@ -27,10 +27,10 @@ public class DBConfig {
 
   @Autowired
   private Environment env;
-  
-  // HikariConfig : HikariCP를 이용해 DB에 접속할 때 필요한 정보를 처리하는 Hikari 클래스
-  @Bean
-  public HikariConfig hikariConfig() {
+
+    // HikariConfig : HikariCP¸¦ ÀÌ¿ëÇØ DB¿¡ Á¢¼ÓÇÒ ¶§ ÇÊ¿äÇÑ Á¤º¸¸¦ Ã³¸®ÇÏ´Â Hikari Å¬·¡½º
+    @Bean
+    HikariConfig hikariConfig() {
     HikariConfig hikariConfig = new HikariConfig();
     hikariConfig.setDriverClassName(env.getProperty("spring.datasource.hikari.driver-class-name"));
     hikariConfig.setJdbcUrl(env.getProperty("spring.datasource.hikari.jdbc-url"));
@@ -38,32 +38,32 @@ public class DBConfig {
     hikariConfig.setPassword(env.getProperty("spring.datasource.hikari.password"));
     return hikariConfig;
   }
-  
-  // HikariDataSource : CP(Connection Pool)을 처리하는 Hikari 클래스
-  @Bean
-  public HikariDataSource hikariDataSource() {
+
+    // HikariDataSource : CP(Connection Pool)À» Ã³¸®ÇÏ´Â Hikari Å¬·¡½º
+    @Bean
+    HikariDataSource hikariDataSource() {
     return new HikariDataSource(hikariConfig());
   }
-  
-  // SqlSessionFactory : SqlSessionTemplate을 만들기 위한 mybatis 인터페이스
-  @Bean
-  public SqlSessionFactory sqlSessionFactory() throws Exception {
+
+    // SqlSessionFactory : SqlSessionTemplateÀ» ¸¸µé±â À§ÇÑ mybatis ÀÎÅÍÆäÀÌ½º
+    @Bean
+    SqlSessionFactory sqlSessionFactory() throws Exception {
     SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
     sqlSessionFactoryBean.setDataSource(hikariDataSource());
     sqlSessionFactoryBean.setConfigLocation(new PathMatchingResourcePatternResolver().getResource(env.getProperty("mybatis.config-location")));
     sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(env.getProperty("mybatis.mapper-locations")));
     return sqlSessionFactoryBean.getObject();
   }
-  
-  // SqlSessionTemplate : 쿼리 실행을 담당하는 mybatis 클래스
-  @Bean
-  public SqlSessionTemplate sqlSessionTemplate() throws Exception {
+
+    // SqlSessionTemplate : Äõ¸® ½ÇÇàÀ» ´ã´çÇÏ´Â mybatis Å¬·¡½º
+    @Bean
+    SqlSessionTemplate sqlSessionTemplate() throws Exception {
     return new SqlSessionTemplate(sqlSessionFactory());
   }
 
-  // TransactionManager : 트랜잭션을 처리하는 스프링 인터페이스
-  @Bean
-  public TransactionManager transactionManager() {
+    // TransactionManager : Æ®·£Àè¼ÇÀ» Ã³¸®ÇÏ´Â ½ºÇÁ¸µ ÀÎÅÍÆäÀÌ½º
+    @Bean
+    TransactionManager transactionManager() {
     return new DataSourceTransactionManager(hikariDataSource());
   }
   
