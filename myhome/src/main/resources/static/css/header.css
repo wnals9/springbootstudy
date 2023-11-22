@@ -11,7 +11,7 @@
 .logo {
   width: 176px;
   height: 46px;
-  background-image: url(../../resources/image/goodee.png);
+  background-image: url(../../image/goodee.png);
   background-size: 100%;
   margin: 50px auto;
   cursor: pointer;

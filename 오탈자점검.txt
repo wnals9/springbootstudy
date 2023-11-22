@@ -1,3 +1,17 @@
+com.gdu.myhome.config.WebMvcConfig 추가 부분 있음
+com.gdu.myhome.config.JasyptConfig 파일 추가됨
+application.yml 파일 추가/수정 부분 있음
+header.css 파일 .logo 부분 이미지 경로 수정
+
+회원 mypage.html
+(14, 177) 로그인 여부 확인
+
+회원 active.html
+(12, 33) 로그인 여부 확인
+
+회원 pw.html
+(14, 43) 로그인 여부 확인
+
 자유 list.html
 (77) 로그인 여부 확인
 (96) 로그인 여부 확인
@@ -19,4 +33,3 @@
 (136) 첨부 완료 후 신규 첨부 목록 지우는 코드 추가
 (159,161) 썸네일 표시 방법 변경, 썸네일 이미지 크기 조정
 (164) 로그인 유저가 업로더이면 삭제 버튼 보여주기
-

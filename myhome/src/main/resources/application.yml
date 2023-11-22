@@ -4,15 +4,19 @@ spring:
     hikari:
       driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
       jdbc-url: jdbc:log4jdbc:oracle:thin:@localhost:1521:xe
-      username: GD
-      password: 1111
-  web:
-    resources:
-      static-locations:
-      - classpath:/static/css/
-      - classpath:/static/js/
-      - classpath:/static/image/
-
+      username: ENC(UnNfpd0gJ1Lma/8BH/ulZw==)
+      password: ENC(Od9fYj1m3KO7o7mxsiJfIw==)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ENC(F9LrJ47J7s/ZhRY1ElfHcikVcKpPirbDCW1jtr+Hnso=)
+    password: ENC(+vqwbhnQzr6ntqsq1hBWc/e6EB9vWJEw2331dhXRFbI=)
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 #  main:
 #    web-application-type: none  # Do not use embeded tomcat
 
@@ -30,4 +34,10 @@ server:
       force: true
     session:
       timeout: 1800
+      tracking-modes: cookie
   port: 8080
+
+# jasypt
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor

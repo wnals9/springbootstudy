@@ -11,7 +11,7 @@
   
   <div class="main_wrap">
     
-    <div class="wrap wrap_6">
+    <div class="wrap wrap_6" th:if="${session.user != null}">
     
       <h1 class="title">마이페이지</h1>
     
@@ -172,6 +172,10 @@
         
       </form>
     
+    </div>
+    
+    <div th:if="${session.user == null}">
+      로그아웃되었습니다.
     </div>
 
   </div>
