@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{/layout/header::head('자유게시판')}"></head>
+
+<style>
+  .blind {
+    display: none;
+  }
+</style>
+
+<body>
+  
+  <div th:replace="~{/layout/header::header}"></div>
+  
+  <div class="main_wrap">
+
+    <div class="wrap wrap_9">
+    
+      <div class="text-center mb-3">
+        <a th:href="@{/free/write.form}">
+          <button type="button" class="btn btn-outline-primary">새글작성</button>
+        </a>
+        <a th:href="@{/free/list.do}">
+          <button type="button" class="btn btn-outline-success">전체보기</button>
+        </a>
+      </div>
+      
+      <div class="text-center my-3">
+        <form method="get" th:action="@{/free/search.do}">
+          <div class="input-group mb-3">
+            <select class="form-select" name="column">
+              <option value="EMAIL">작성자</option>
+              <option value="CONTENTS">내용</option>
+            </select>
+            <input type="text" name="query" class="form-control" placeholder="검색어 입력">
+            <button type="submit" class="btn btn-outline-primary btn-sm">검색</button>
+          </div>
+        </form>
+      </div>
+      
+      <div>
+        <table class="table">
+          <thead class="table-light">
+            <tr>
+              <td>순번</td>
+              <td>작성자</td>
+              <td>내용</td>
+              <td>작성일자</td>
+            </tr>
+          </thead>
+          <tbody>
+            <th:block th:each="free,vs:${freeList}">
+              <tr class="list">
+                <td th:text="${beginNo - vs.index}"></td>
+                <!-- 정상 게시글 -->            
+                <th:block th:if="${free.status == 1}">
+                  <th:block th:if="${free.email == null}">
+                    <td>정보없음</td>
+                  </th:block>
+                  <th:block th:if="${free.email != null}">
+                    <td th:text="${free.email}"></td>
+                  </th:block>
+                  <td>
+                    <!-- depth에 따른 들여쓰기 -->              
+                    <span th:each="n:${#numbers.sequence(1, free.depth, 1)}" th:utext="|&nbsp;&nbsp;|"></span>
+                    <!-- 댓글은 댓글 아이콘 부착하기 -->
+                    <th:block th:if="${free.depth != 0}">
+                      <i class="fa-solid fa-share"></i>
+                    </th:block>
+                    <!-- 게시글내용 -->
+                    <span th:text="${free.contents}"></span>
+                    <!-- 댓글작성버튼 -->
+                    <button type="button" class="btn btn-outline-dark btn-sm btn_reply">댓글</button>
+                    <!-- 게시글삭제버튼 -->
+                    <form class="frm_remove" method="post" th:action="@{/free/remove.do}" style="display: inline;">
+                      <th:block th:if="${session.user != null}">
+                        <th:block th:if="${free.email == session.user.email}">                  
+                          <input type="hidden" name="freeNo" th:value="${free.freeNo}">
+                          <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                        </th:block>
+                      </th:block>
+                    </form>
+                  </td>
+                  <td th:text="${#dates.format(free.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                </th:block>
+                <!-- 삭제된 게시글 -->
+                <th:block th:if="${free.status == 0}">
+                  <td colspan="3">
+                    삭제된 게시글입니다.
+                  </td>
+                </th:block>
+              </tr>
+              <tr class="blind write_tr">
+                <td colspan="4">
+                  <th:block th:if="${session.user != null}">
+                    <form method="post" th:action="@{/free/addReply.do}">
+                      <div class="input-group mb-3">
+                        <label class="input-group-text" id="inputGroup-sizing-default">작성자</label>
+                          <input type="text" name="email" th:value="${session.user.email}" readonly class="form-control">
+                      </div>
+                      <div class="input-group">
+                        <label for="contents" class="input-group-text">내용</label>
+                        <textarea name="contents" id="contents" class="form-control" aria-label="With textarea"></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm">댓글달기</button>
+                      </div>
+                      <div>
+                        <input type="hidden" name="depth" th:value="${free.depth}">
+                        <input type="hidden" name="groupNo" th:value="${free.groupNo}">
+                        <input type="hidden" name="groupOrder" th:value="${free.groupOrder}">
+                      </div>
+                    </form>
+                  </th:block>
+                </td>
+              </tr>
+            </th:block>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" th:utext="${paging}"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    
+    </div>
+    
+    <script th:inline="javascript">
+    
+      const fnAddResult = () => {
+        let addResult = /*[[${addResult}]]*/ null;
+        if(addResult !== null){
+          if(addResult === 1){
+            alert('게시글이 등록되었습니다.');
+          } else {
+            alert('게시글이 등록되지 않았습니다.');
+          }
+        }
+      }
+      
+      const fnBlind = () => {
+        $('.btn_reply').click((ev) => {
+          let user = /*[[${session.user}]]*/ null;
+          if(user === null){
+            if(confirm('로그인이 필요한 기능입니다. 로그인할까요?')){
+              location.href = '/user/login.form';
+            } else {
+              return;
+            }
+          }
+          // 화살표 함수는 this 객체가 지원되지 않기 때문에
+          // 이벤트 대상을 "이벤트 객체"의 "target" 속성으로 처리한다.
+          let writeTr = $(ev.target).closest('.list').next();
+          // class="blind"를 가진 상태 : 숨김 상태이므로 열어 준다.
+          if(writeTr.hasClass('blind')){
+            $('.write_tr').addClass('blind');  // 모든 작성화면 닫기
+            writeTr.removeClass('blind');      // 현재 작성화면 열기
+          }
+          // class="blind"가 없는 상태 : 이미 열린 상태이므로 다시 숨긴다.
+          else {
+            writeTr.addClass('blind');
+          }
+        })
+      }
+      
+      const fnAddReplyResult = () => {
+        let addReplyResult = /*[[${addReplyResult}]]*/ null;
+        if(addReplyResult !== null){
+          if(addReplyResult === 1){
+            alert('댓글이 등록되었습니다.');
+          } else {
+            alert('댓글이 등록되지 않았습니다.');
+          }
+        }
+      }
+    
+      const fnRemove = () => {
+        $('.frm_remove').submit((ev) => {
+          if(!confirm('게시글을 삭제할까요?')){
+            ev.preventDefault();
+            return;
+          }
+        })
+      }
+      
+      const fnRemoveResult = () => {
+        let removeResult = /*[[${removeResult}]]*/ null;
+        if(removeResult !== null){
+          if(removeResult === 1){
+            alert('게시글이 삭제되었습니다.');
+          } else {
+            alert('게시글이 삭제되지 않았습니다.');
+          }
+        }
+      }
+      
+      fnAddResult();
+      fnBlind();
+      fnAddReplyResult();
+      fnRemove();
+      fnRemoveResult();
+    
+    </script>
+
+  </div>
+  
+  <div th:replace="~{/layout/footer::footer}"></div>
+  
+</body>
+</html>

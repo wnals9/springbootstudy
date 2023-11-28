@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{/layout/header::head(|${upload.uploadNo}번 게시글|)}"></head>
+
+<body>
+  
+  <div th:replace="~{/layout/header::header}"></div>
+  
+  <div class="main_wrap">
+
+    <div class="wrap wrap_6">
+    
+      <h1 class="title">웹하드 게시글 수정</h1>
+    
+      <form id="frm_upload_edit" method="post" th:action="@{/upload/modify.do}">
+      
+        <div class="mb-3 row">
+          <label for="email" class="col-sm-2 col-form-label">작성자</label>
+          <div class="col-sm-10">
+            <input type="text" readonly class="form-control-plaintext" id="email" th:value="${upload.userDto.name}">
+          </div>
+        </div>
+        
+        <div class="mb-3 row">
+          <label for="createdAt" class="col-sm-2 col-form-label">작성일</label>
+          <div class="col-sm-10">
+            <input type="text" readonly class="form-control-plaintext" id="createdAt" th:value="${upload.createdAt}">
+          </div>
+        </div>
+        
+        <div class="mb-3 row">
+          <label for="modifiedAt" class="col-sm-2 col-form-label">수정일</label>
+          <div class="col-sm-10">
+            <input type="text" readonly class="form-control-plaintext" id="modifiedAt" th:value="${upload.modifiedAt}">
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="title" class="form-label">제목</label>
+          <input type="text" name="title" th:value="${upload.title}" id="title" class="form-control">
+        </div>
+        
+        <div class="mb-3">
+          <label for="contents" class="form-label">내용</label>
+          <textarea name="contents" id="contents" class="form-control" rows="3" th:text="${upload.contents}"></textarea>
+        </div>
+        
+        <!-- 첨부 추가 -->
+        <th:block th:if="${session.user != null}">
+          <th:block th:if="${session.user.userNo == upload.userDto.userNo}">
+            <h5>신규 첨부</h5>
+            <div class="input-group">
+              <input type="hidden" name="userNo" th:value="${session.user.userNo}">
+              <input type="file" name="files" id="files"  class="form-control" multiple>
+              <button class="btn btn-outline-secondary" type="button" id="btn_add_attach">첨부추가하기</button>
+            </div>
+            <div class="attached_list mt-3" id="attached_list"></div>
+          </th:block>
+        </th:block>
+        
+        <hr class="my-3">
+    
+        <!-- 첨부 목록에서 삭제 -->
+        <h5>기존 첨부 목록</h5>
+        <div id="attach_list"></div>
+
+        <th:block th:if="${session.user != null}">
+          <th:block th:if="${session.user.userNo == upload.userDto.userNo}">    
+            <div class="text-center my-3">
+              <a th:href="@{/upload/detail.do(uploadNo=${upload.uploadNo})}">
+                <button class="btn btn-secondary" type="button">돌아가기</button>
+              </a>
+              <input type="hidden" name="uploadNo" th:value="${upload.uploadNo}">
+              <button type="submit" id="btn_modify" class="btn btn-success">수정하기</button>
+            </div>
+          </th:block>
+        </th:block>
+      </form>
+      
+    </div>
+      
+    <script th:inline="javascript">
+    
+      const fnFileCheck = () => {
+        $('#files').change((ev) => {
+          $('#attached_list').empty();
+          let maxSize = 1024 * 1024 * 100;
+          let maxSizePerFile = 1024 * 1024 * 10;
+          let totalSize = 0;
+          let files = ev.target.files;
+          for(let i = 0; i < files.length; i++){
+            totalSize += files[i].size;
+            if(files[i].size > maxSizePerFile){
+              alert('각 첨부파일의 최대 크기는 10MB입니다.');
+              $(ev.target).val('');
+              $('#attached_list').empty();
+              return;
+            }
+            $('#attached_list').append('<div>' + files[i].name + '</div>');
+          }
+          if(totalSize > maxSize){
+            alert('전체 첨부파일의 최대 크기는 100MB입니다.');
+            $(ev.target).val('');
+            $('#attached_list').empty();
+            return;
+          }
+        })
+      }
+      
+      const fnAddAttach = () => {
+        $('#btn_add_attach').click(() => {
+          // 폼을 FormData 객체로 생성한다.
+          let formData = new FormData();
+          // 첨부된 파일들을 FormData에 추가한다.
+          let files = $('#files').prop('files');
+          $.each(files, (i, file) => {
+            formData.append('files', file);  // 폼에 포함된 파라미터명은 files이다. files는 여러 개의 파일을 가지고 있다.
+          })
+          // 현재 게시글 번호(uploadNo)를 FormData에 추가한다.
+          formData.append('uploadNo', '[[${upload.uploadNo}]]');
+          // FormData 객체를 보내서 저장한다.
+          $.ajax({
+            // 요청
+            type: 'post',
+            url: '/upload/addAttach.do',
+            data: formData,
+            contentType: false,
+            processData: false,
+            // 응답
+            dataType: 'json',
+            success: (resData) => {  // resData = {"attachResult": true}
+              if(resData.attachResult){
+                alert('첨부 파일이 추가되었습니다.');
+                fnAttachList();
+                $('#attached_list').empty();
+              } else {
+                alert('첨부 파일이 추가되지 않았습니다.');
+              }
+              $('#files').val('');
+            }
+          })
+        })
+      }
+    
+      const fnAttachList = () => {
+        $.ajax({
+          // 요청
+          type: 'get',
+          url: '/upload/getAttachList.do',
+          data: 'uploadNo=[[${upload.uploadNo}]]',
+          // 응답
+          dataType: 'json',
+          success: (resData) => {  // resData = {"attachList": []}
+            $('#attach_list').empty();
+            $.each(resData.attachList, (i, attach) => {
+              let str = '<div class="attach">';
+              if(attach.hasThumbnail === 0){
+            	  str += '<img src="/image/attach1.png" width="50">';
+              } else {        	  
+                str += '<img src="' + attach.path + '/s_' + attach.filesystemName + '"  width="50">';
+              }
+              str += '<span style="margin: 0 10px;">' + attach.originalFilename + '</span>';
+              <!-- 로그인 유저가 업로더이면 삭제 버튼 보여주기 -->
+              let user = /*[[${session.user}]]*/ null;
+              if(user !== null){
+                if(user.userNo == '[[${upload.userDto.userNo}]]'){            
+                  str += '<a data-attach_no="' + attach.attachNo + '"><i class="fa-regular fa-circle-xmark ico_remove_attach"></i></a>';
+                }
+              }
+              str += '</div>';
+              $('#attach_list').append(str);
+            })
+          }
+        })
+      }
+      
+      const fnRemoveAttach = () => {
+        $(document).on('click', '.ico_remove_attach', (ev) => {
+          if(!confirm('해당 첨부 파일을 삭제할까요?')){
+            return;
+          }
+          $.ajax({
+            // 요청
+            type: 'post',
+            url: '/upload/removeAttach.do',
+            data: 'attachNo=' + $(ev.target).parent().data('attach_no'),
+            // 응답
+            dataType: 'json',
+            success: (resData) => {  // resData = {"removeResult": 1}
+              if(resData.removeResult === 1){
+                alert('해당 첨부 파일이 삭제되었습니다.');
+                fnAttachList();
+              } else {
+                alert('해당 첨부 파일이 삭제되지 않았습니다.');
+              }
+            }
+          })
+        })
+      }
+      
+      const fnModifyAttach = () => {
+    	  $('#frm_upload_edit').submit((ev) => {
+          if($('#title').val() === ''){
+            alert('제목은 반드시 입력해야 합니다.');
+            $('#title').focus();
+            ev.preventDefault();
+            return;
+          } else if($('#files').val() !== ''){
+        	  alert('새로운 첨부가 있는 경우 첨부추가하기 버튼을 먼저 클릭해 주세요.');
+        	  $('#btn_add_attach').focus();
+        	  ev.preventDefault();
+            return;
+          }
+    	  })
+      }
+    
+      fnFileCheck();
+      fnAddAttach();
+      fnAttachList();
+      fnRemoveAttach();
+      fnModifyAttach();
+      
+    </script>
+  
+  </div>
+  
+  <div th:replace="~{/layout/footer::footer}"></div>
+  
+</body>
+</html>
